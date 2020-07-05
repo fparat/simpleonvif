@@ -1,5 +1,7 @@
 //! Functions generating ONVIF SOAP messages
 
+#![allow(unused)]
+
 use std::fmt::Display;
 
 use crate::namespaces::*;

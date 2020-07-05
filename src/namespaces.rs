@@ -1,5 +1,7 @@
 //! Namespace definitions
 
+#![allow(unused)]
+
 // XML
 pub const XML_SCHEMA: &str = "http://www.w3.org/2001/XMLSchema";
 pub const XML_SCHEMA_INSTANCE: &str = "http://www.w3.org/2001/XMLSchema-instance";
