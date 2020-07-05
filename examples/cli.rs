@@ -39,6 +39,10 @@ enum SubCommand {
     ContinousMove(ContinousMove),
     #[clap(name = "contzoom", about = "Continous zoom")]
     ContinousZoom(ContinousZoom),
+    #[clap(name = "getprofiles", about = "Get available profiles")]
+    GetProfiles,
+    #[clap(name = "stop", about = "Stop all camera movements")]
+    Stop,
 }
 
 #[derive(Clap, Debug)]
@@ -65,6 +69,8 @@ fn main() -> Result<()> {
         let is_mandatory = match &command.subcmd {
             SubCommand::ContinousMove(_) => true,
             SubCommand::ContinousZoom(_) => true,
+            SubCommand::GetProfiles => false,
+            SubCommand::Stop => true,
         };
         if is_mandatory {
             return Err(anyhow!(
@@ -81,14 +87,6 @@ fn main() -> Result<()> {
     let cam = OnvifCamera::new(&address, profile)?;
     trace!("new camera: {:?}", &cam);
 
-    if let Ok(profiles) = cam.get_profiles() {
-        info!("found {} available profiles", profiles.len());
-        for p in profiles {
-            println!("{}", p);
-        }
-        println!();
-    }
-
     match command.subcmd {
         SubCommand::ContinousMove(params) => {
             let timeout = Duration::from_secs_f32(params.timeout);
@@ -103,6 +101,15 @@ fn main() -> Result<()> {
             info!("zooming vz={} for {:?}\n", params.vz, timeout);
             cam.continuous_move_zoom(params.vz, timeout)?;
         }
+        SubCommand::GetProfiles => {
+            let profiles = cam.get_profiles()?;
+            info!("found {} available profiles", profiles.len());
+            for p in profiles {
+                println!("{}", p);
+            }
+            println!();
+        }
+        SubCommand::Stop => cam.stop(true, true)?,
     }
 
     Ok(())
