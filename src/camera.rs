@@ -11,18 +11,26 @@ use crate::{onvif, Error};
 #[derive(Debug)]
 pub struct OnvifCamera {
     address: String,
-    profile: String,
+    profile: Option<String>,
     user: Option<String>,
     password: Option<String>,
 }
 
 impl OnvifCamera {
-    pub fn new(address: &str, profile: &str) -> Self {
+    pub fn new(address: &str, profile: Option<&str>) -> Self {
+        let u = url::Url::parse(address).expect("invalid address"); // todo return a result
+
+        let user = match u.username() {
+            "" => None,
+            name => Some(name.to_string()),
+        };
+        let password = u.password().map(String::from);
+
         Self {
             address: address.to_string(),
-            profile: profile.to_string(),
-            user: None,
-            password: None,
+            profile: profile.map(String::from),
+            user,
+            password,
         }
     }
 
@@ -75,6 +83,13 @@ impl OnvifCamera {
         Ok(profiles)
     }
 
+    fn get_profile(&self) -> Result<&str> {
+        self.profile
+            .as_ref()
+            .map(|s| s.as_str())
+            .ok_or(Error::MissingProfile)
+    }
+
     pub fn continuous_move(&self, vx: f32, vy: f32, timeout: Duration) -> Result<()> {
         trace!(
             "continuous_move vx={}, vy={} timeout={:?}",
@@ -84,7 +99,7 @@ impl OnvifCamera {
         );
 
         let soap_msg = onvif::soap_envelop(
-            onvif::soap_body(onvif::continuous_move(&self.profile, vx, vy)),
+            onvif::soap_body(onvif::continuous_move(&self.get_profile()?, vx, vy)),
             self.get_auth(),
         );
 
@@ -100,7 +115,7 @@ impl OnvifCamera {
         trace!("stop pantilt={:?}, zoom={:?}", pantilt, zoom);
 
         let soap_msg = onvif::soap_envelop(
-            onvif::soap_body(onvif::stop(&self.profile, pantilt, zoom)),
+            onvif::soap_body(onvif::stop(self.get_profile()?, pantilt, zoom)),
             self.get_auth(),
         );
 
