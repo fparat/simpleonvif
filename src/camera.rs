@@ -9,6 +9,22 @@ use crate::error::Result;
 use crate::{onvif, Error};
 
 /// Camera device
+///
+/// Example:
+///
+/// ```ignored
+/// use std::time::Duration;
+/// use simpleonvif::OnvifCamera;
+///
+/// // Create a camera handle
+/// let cam = OnvifCamera::new("http://user:passwd@192.168.0.32:8080", Some("profile1"))?;
+///
+/// // Fetch available profiles
+/// let profiles = cam.get_profiles()?;
+///
+/// // Continous move right for 3 seconds
+/// cam.continuous_move(1.0, 0.0, Duration::from_secs(3))?;
+/// ```
 #[derive(Debug)]
 pub struct OnvifCamera {
     address: String,
