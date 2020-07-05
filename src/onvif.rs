@@ -1,4 +1,4 @@
-//! Functions generating ONVIF SOAP MESSAGES
+//! Functions generating ONVIF SOAP messages
 
 use std::fmt::Display;
 

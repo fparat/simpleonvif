@@ -17,9 +17,17 @@ struct ContinousMove {
     /// Vertical velocity
     #[clap(allow_hyphen_values = true)]
     vy: f32,
+    /// Duration of movement in seconds
+    #[clap(long, short = "t", default_value = "2")]
+    timeout: f32, // seconds
+}
+
+#[derive(Clap, Debug)]
+#[clap(setting = clap::AppSettings::AllowNegativeNumbers)]
+struct ContinousZoom {
     /// Zoom speed (optional)
     #[clap(allow_hyphen_values = true)]
-    vz: Option<f32>,
+    vz: f32,
     /// Duration of movement in seconds
     #[clap(long, short = "t", default_value = "2")]
     timeout: f32, // seconds
@@ -29,6 +37,8 @@ struct ContinousMove {
 enum SubCommand {
     #[clap(name = "contmove", about = "Continous move")]
     ContinousMove(ContinousMove),
+    #[clap(name = "contzoom", about = "Continous zoom")]
+    ContinousZoom(ContinousZoom),
 }
 
 #[derive(Clap, Debug)]
@@ -54,6 +64,7 @@ fn main() -> Result<()> {
     if command.profile.is_none() {
         let is_mandatory = match &command.subcmd {
             SubCommand::ContinousMove(_) => true,
+            SubCommand::ContinousZoom(_) => true,
         };
         if is_mandatory {
             return Err(anyhow!(
@@ -67,7 +78,8 @@ fn main() -> Result<()> {
     let address = format!("{}/onvif/device_service", &command.address);
     let profile = command.profile.as_ref().map(String::as_str);
 
-    let cam = OnvifCamera::new(&address, profile);
+    let cam = OnvifCamera::new(&address, profile)?;
+    trace!("new camera: {:?}", &cam);
 
     if let Ok(profiles) = cam.get_profiles() {
         info!("found {} available profiles", profiles.len());
@@ -85,6 +97,11 @@ fn main() -> Result<()> {
                 params.vx, params.vy, timeout
             );
             cam.continuous_move(params.vx, params.vy, timeout)?;
+        }
+        SubCommand::ContinousZoom(params) => {
+            let timeout = Duration::from_secs_f32(params.timeout);
+            info!("zooming vz={} for {:?}\n", params.vz, timeout);
+            cam.continuous_move_zoom(params.vz, timeout)?;
         }
     }
 
