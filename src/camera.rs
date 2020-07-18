@@ -35,8 +35,10 @@ pub struct OnvifCamera {
 
 impl OnvifCamera {
     /// Returns a new camera object. Note that the profile requires to be Some() for many methods.
+    /// The url path "/onvif/device_service" is automatically set.
     pub fn new(address: &str, profile: Option<&str>) -> Result<Self> {
-        let u = url::Url::parse(address)?;
+        let mut u = url::Url::parse(address)?;
+        u.set_path("/onvif/device_service");
 
         let user = match u.username() {
             "" => None,
@@ -45,7 +47,7 @@ impl OnvifCamera {
         let password = u.password().map(String::from);
 
         Ok(Self {
-            address: address.to_string(),
+            address: u.to_string(),
             profile: profile.map(String::from),
             user,
             password,

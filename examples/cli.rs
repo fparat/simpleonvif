@@ -81,7 +81,7 @@ fn main() -> Result<()> {
 
     debug!("{:?}", &command);
 
-    let address = format!("{}/onvif/device_service", &command.address);
+    let address = format!("{}", &command.address);
     let profile = command.profile.as_ref().map(String::as_str);
 
     let cam = OnvifCamera::new(&address, profile)?;
