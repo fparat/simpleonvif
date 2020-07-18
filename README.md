@@ -1,5 +1,7 @@
 # simpleonvif
 
+![CI](https://github.com/fparat/simpleonvif/workflows/Rust/badge.svg)
+
 This library provides a simple client for interacting with ONVIF IP cameras.
 
 Inspired by [PyOnvif](https://github.com/Pegax/pyOnvif), the implementation
