@@ -1,7 +1,6 @@
 use std::thread::sleep;
 use std::time::Duration;
 
-use regex::Regex;
 use ureq::Response;
 
 use crate::auth;
@@ -107,13 +106,17 @@ impl OnvifCamera {
 
         let resp = self.post(&soap_msg)?;
 
-        // regex for parsing xml ohlala...
-        let resp_str = resp.into_string().expect("resp is not a string?");
-        let re = Regex::new(r#"<trt:Profiles .*?token="(.+?)".*?>"#).unwrap();
-        let profiles = re
-            .captures_iter(&resp_str)
-            .map(|cap| cap[1].to_string())
+        // Extract the profile tokens from the response
+        let resp_str = resp.into_string().expect("resp is not a string");
+        trace!("response body = {}", &resp_str);
+        let profiles = roxmltree::Document::parse(&resp_str)?
+            .descendants()
+            .filter(|n| n.tag_name().name() == "Profiles")
+            .filter_map(|n| n.attribute("token"))
+            .map(String::from)
             .collect();
+
+        trace!("Found profiles: {:?}", &profiles);
 
         Ok(profiles)
     }

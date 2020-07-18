@@ -13,4 +13,6 @@ pub enum Error {
     MissingProfile,
     #[error("invalid URL")]
     InvalidUrl(#[from] url::ParseError),
+    #[error("xml parse error")]
+    XmlParseError(#[from] roxmltree::Error),
 }
