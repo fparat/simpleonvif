@@ -109,7 +109,7 @@ impl OnvifCamera {
 
         // regex for parsing xml ohlala...
         let resp_str = resp.into_string().expect("resp is not a string?");
-        let re = Regex::new(r#"<trt:Profiles .*?token="(.+?)">"#).unwrap();
+        let re = Regex::new(r#"<trt:Profiles .*?token="(.+?)".*?>"#).unwrap();
         let profiles = re
             .captures_iter(&resp_str)
             .map(|cap| cap[1].to_string())
